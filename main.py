@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import datetime
+from datetime import datetime, timedelta, timezone
 from requests_html import HTMLSession
 from slack_webhooks import SlackWebhooks
 
@@ -32,13 +32,14 @@ def get_upcoming_contests():
     ret = []
     for contest in upcoming_contests:
         contest = contest.find('td')
-        contest = [element.text for element in contest]
         dic = {}
-        dic['start_time'] = datetime.datetime.strptime(contest[0], '%Y-%m-%d %H:%M:%S%z')
-        dic['contest_name'] = contest[1]
-        [hour, minute] = map(int, contest[2].split(':'))
+        dic['start_time'] = datetime.strptime(contest[0].text, '%Y-%m-%d %H:%M:%S%z')
+        dic['contest_name'] = contest[1].text
+        dic['screen_name'] = list(contest[1].links)[0].split('/')[-1]
+        dic['link'] = list(contest[1].absolute_links)[0]
+        [hour, minute] = map(int, contest[2].text.split(':'))
         dic['duration'] = ((hour * 60) + minute) * 60
-        dic['rated_range'] = contest[3]
+        dic['rated_range'] = contest[3].text
         ret.append(dic)
     return ret
 
