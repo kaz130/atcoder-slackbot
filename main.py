@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def notice_upcoming_contests(last_updated, now):
     contests = []
-    for contest in get_upcoming_contests():
+    for contest in get_contests("upcoming"):
         notification_time = contest['start_time'] - timedelta(seconds=60*60*3)
         if last_updated < notification_time and notification_time < now:
             contests += contest
@@ -33,13 +33,20 @@ def notice_upcoming_contests(last_updated, now):
     logger.debug("notice:" + payload)
     slack.post(payload)
 
-def get_upcoming_contests():
+def get_contests(contest_type):
     session = HTMLSession()
     r = session.get('https://atcoder.jp/contests/?lang=ja')
-    sel = '#contest-table-upcoming > div > div > table > tbody'
-    upcoming_contests = r.html.find(sel, first=True).find('tr')
+    selectors = {
+            "action" : '#contest-table-action > div > div > table > tbody',
+            "permanent" : '#contest-table-permanent > div > div > table > tbody',
+            "upcoming" : '#contest-table-upcoming > div > div > table > tbody',
+            "recent" : '#contest-table-recent > div > div > table > tbody'
+            }
+    sel = selectors[contest_type]
+
+    contests = r.html.find(sel, first=True).find('tr')
     ret = []
-    for contest in upcoming_contests:
+    for contest in contests:
         contest = contest.find('td')
         dic = {}
         dic['start_time'] = datetime.strptime(contest[0].text, '%Y-%m-%d %H:%M:%S%z')
