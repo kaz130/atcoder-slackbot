@@ -4,6 +4,11 @@ import time
 from datetime import datetime, timedelta, timezone
 from requests_html import HTMLSession
 from slack_webhooks import SlackWebhooks
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
+logger = logging.getLogger(__name__)
 
 def notice_upcoming_contests(last_updated, now):
     contests = []
@@ -24,8 +29,8 @@ def notice_upcoming_contests(last_updated, now):
                 days[contest['start_time'].weekday()],
                 contest['contest_name'])
 
-    print(message)
     payload = {"text" : message}
+    logger.debug("notice:" + payload)
     slack.post(payload)
 
 def get_upcoming_contests():
@@ -45,13 +50,16 @@ def get_upcoming_contests():
         dic['duration'] = ((hour * 60) + minute) * 60
         dic['rated_range'] = contest[3].text
         ret.append(dic)
+        logger.debug("get_contest:" + dic['screen_name'])
     return ret
 
 def main():
     interval = 60 * 60
     last_updated = datetime.now(timezone(timedelta(seconds=9*60*60)))
     while True:
+        logger.info("Update")
         now = datetime.now(timezone(timedelta(seconds=9*60*60)))
+
         notice_upcoming_contests(last_updated, now)
 
         time.sleep(interval)
