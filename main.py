@@ -5,23 +5,17 @@ from datetime import datetime, timedelta, timezone
 from requests_html import HTMLSession
 from slack_webhooks import SlackWebhooks
 import logging
+import click
 
 logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 logger = logging.getLogger(__name__)
 
-def notice_upcoming_contests(last_updated, now):
-    contests = []
-    for contest in get_contests("upcoming"):
-        notification_time = contest['start_time'] - timedelta(seconds=60*60*3)
-        if last_updated < notification_time and notification_time < now:
-            contests += contest
-
+def notice(contests, message):
     if not contests:
         return
 
     slack = SlackWebhooks()
-    message = "予定されたコンテスト\n"
     for i, contest in enumerate(contests):
         days = ["(月)", "(火)", "(水)", "(木)", "(金)", "(土)", "(日)"]
         message = "{}{} {}\n".format(
@@ -60,17 +54,17 @@ def get_contests(contest_type):
         logger.debug("get_contest:" + dic['screen_name'])
     return ret
 
-def main():
-    interval = 60 * 60
-    last_updated = datetime.now(timezone(timedelta(seconds=9*60*60)))
-    while True:
-        logger.info("Update")
-        now = datetime.now(timezone(timedelta(seconds=9*60*60)))
+@click.command()
+@click.argument('notice_time', default=12)
+def main(notice_time):
+    now = datetime.now(timezone(timedelta(seconds=9*60*60)))
 
-        notice_upcoming_contests(last_updated, now)
+    notice_contests = []
+    for contest in get_contests("upcoming"):
+        if contest['start_time'] < now + timedelta(hours=notice_time):
+            notice_contests.append(contest)
 
-        time.sleep(interval)
-        last_updated = datetime.now()
+    notice(notice_contests, "予定されたコンテスト")
 
 if __name__ == '__main__':
     main()
