@@ -38,7 +38,12 @@ def get_contests(contest_type):
             }
     sel = selectors[contest_type]
 
-    contests = r.html.find(sel, first=True).find('tr')
+    try:
+        contests = r.html.find(sel, first=True).find('tr')
+    except AttributeError as e:
+        logger.debug(e)
+        return []
+
     ret = []
     for contest in contests:
         contest = contest.find('td')
