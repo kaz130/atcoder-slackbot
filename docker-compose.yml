@@ -1,0 +1,8 @@
+version: '2'
+services:
+    py:
+        build:
+            context: .
+        volumes:
+            - .:/code
+

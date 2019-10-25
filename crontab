@@ -1,0 +1,5 @@
+SHELL = /bin/sh
+PATH = /sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=""
+5 7 * * * python /code/main.py >> /log.txt
+5 19 * * * python /code/main.py >> /log.txt
