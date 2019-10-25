@@ -24,7 +24,6 @@ def notice(contests, message):
                 contest['contest_name'])
 
     payload = {"text" : message}
-    logger.debug("notice:" + payload)
     slack.post(payload)
 
 def get_contests(contest_type):
