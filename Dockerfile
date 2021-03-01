@@ -1,11 +1,10 @@
-FROM python:3.6
+FROM golang:1.16.0
 ADD . /code
 # ENV http_proxy
 # ENV https_proxy
 WORKDIR /code
 ENV TZ=Asia/Tokyo
 
-RUN pip install -r requirements.txt
 RUN apt-get update
 RUN apt-get install -y busybox-static
 
